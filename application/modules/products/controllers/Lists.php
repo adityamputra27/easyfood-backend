@@ -165,7 +165,7 @@ class Lists extends CI_Controller
 	private function doUpload()
     {
         $config['upload_path']  = './uploads/foods/';
-        $config['allowed_types'] = 'gif|jpg|png';
+        $config['allowed_types'] = 'gif|jpg|png|jpeg|webp';
         $config['file_name'] = round(microtime(true) * 1000); 
  
         $this->load->library('upload', $config);

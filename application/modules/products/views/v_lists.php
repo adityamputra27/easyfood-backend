@@ -212,7 +212,7 @@
                     "orderable": false,
                 },
                 {
-                    "targets": [7],
+                    "targets": [6],
                     "orderable": false,
                 },
             ],
@@ -228,8 +228,8 @@
             let barcode = trParents.find('td:eq(1)').text()
             let name = trParents.find('td:eq(2)').text()
 
-            let h_modal = trParents.find('td:eq(4)').text().split('%')
-            let jual = trParents.find('td:eq(5)').text().split('Rp.')
+            // let h_modal = trParents.find('td:eq(4)').text().split('%')
+            let jual = trParents.find('td:eq(4)').text().split('Rp.')
             let id = button.data('id')
 
             let kategori = $(button).data('categories_id')
@@ -242,8 +242,7 @@
                 modal.find('.modal-title').html(`Edit Menu : <b>${name}</b>`)
                 $('#productForm').attr('action', `<?= base_url() ?>products/lists/edit/${id}`)
                 modal.find('#productNameInput').val(name)
-                modal.find('#discountInput').val(h_modal[0])
-                modal.find('#priceInput').val(jual[1])
+                modal.find('#priceInput').val(jual[1].trim())
 
                 modal.find('#categoryIdInput').val(kategori).trigger('change')
                 modal.find('#descriptionInput').val(description).trigger('change')
@@ -258,7 +257,6 @@
                 $('#productForm').attr('action', '<?= base_url() ?>products/lists/store')
                 modal.find('#barcodeInput').val('')
                 modal.find('#productNameInput').val('')
-                modal.find('#discountInput').val('')
                 modal.find('#priceInput').val('')
                 modal.find('#categoryIdInput').val('').trigger('change')
                 modal.find('#descriptionInput').val('')

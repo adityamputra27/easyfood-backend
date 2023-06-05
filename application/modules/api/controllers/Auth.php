@@ -32,7 +32,7 @@ class Auth extends CI_Controller
 
 				$this->db->trans_start();
 
-				$response['status'] = false;
+				$response['status'] = true;
 				$response['message'] = 'Login Sukses!';
 				$response['data'] = $customers;
 
@@ -51,9 +51,14 @@ class Auth extends CI_Controller
 		$phone = $this->input->post("phone");
 		$password = $this->input->post("password");
 
+		$phoneExists = $this->auth_model->validateLogin($phone);
+
 		if ($fullname == '' || $phone == '' || $password == '') {
 			$response["status"] = false;
 			$response["message"] = "Registrasi Gagal! Pastikan Form Terisi!";
+		} else if (count($phoneExists) > 0) {
+			$response["status"] = false;
+			$response["message"] = "Nomor Telepon Sudah Digunakan!";
 		} else {
 			$payload = [
 				"fullname" => $fullname,
