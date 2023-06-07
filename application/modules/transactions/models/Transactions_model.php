@@ -48,9 +48,9 @@ class Transactions_model extends CI_Model
             $this->db->like("cu.fullname", $this->input->post("customers"));
         }
 
-        $this->db->join("users as u", "t.users_id = u.id");
-        $this->db->join('tables as ta', 't.tables_id = ta.id');
-        $this->db->join('customers as cu', 't.customers_id = cu.id');
+        $this->db->join("users as u", "t.users_id = u.id", 'LEFT');
+        $this->db->join('tables as ta', 't.tables_id = ta.id', 'LEFT');
+        $this->db->join('customers as cu', 't.customers_id = cu.id', 'LEFT');
         $this->db->order_by("t.datetime", "DESC");
         $this->db->from($this->table);
         $i = 0;

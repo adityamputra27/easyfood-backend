@@ -89,6 +89,82 @@
       <!-- /.box -->
     </div>
 </section>
+<div class="modal fade" id="payModal">
+  <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+          <div class="modal-header">
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span></button>
+              <h4 class="modal-title">Transaksi Pembayaran</h4>
+          </div>
+          <form action="<?= base_url() ?>transactions/update/" method="POST" id="payForm">
+              <div class="modal-body">
+                  <div class="row">
+                      <div class="col-md-6">
+                          <div class="form-group row">
+                              <label for="" class="col-sm-4 col-form-label">Tanggal <span class="text-danger">*</span></label>
+                              <div class="col-sm-8">
+                                  <div class="input-group date">
+                                      <input type="text" class="form-control datepicker" autocomplete="off" name="date_modal" id="date_modal" data-provide="datepicker" value="   <?= date('Y-m-d  H:i:s') ?>">
+                                      <div class="input-group-addon">
+                                          <span class="fa fa-calendar"></span>
+                                      </div>
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="form-group row">
+                              <label for="" class="col-sm-4 col-form-label">Kode</label>
+                              <div class="col-sm-8">
+                                  <input type="text" class="form-control" id="codeCurr" name="codeCurr">
+                              </div>
+                          </div>
+                          <div class="form-group row">
+                              <label for="" class="col-sm-4 col-form-label">Jumlah Bayar <span class="text-danger">*</span></label>
+                              <div class="col-sm-8">
+                                  <div class="input-group">
+                                      <div class="input-group-addon">Rp</div>
+                                      <input type="text" class="form-control total_cash" name="total_cash" pattern="[0-9]+" placeholder="0" id="totalCash" placeholder="0" autocomplete="off">
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                      <div class="col-md-6">
+                          <div class="form-group row">
+                              <label for="" class="col-sm-4 col-form-label">Total Bayar</label>
+                              <div class="col-sm-8">
+                                  <div class="input-group">
+                                      <div class="input-group-addon">Rp</div>
+                                      <input type="text" class="form-control" name="total_bayar_modal" id="total_bayar_modal" disabled>
+                                      <input type="hidden" id="total_bayar_modal_val">
+                                  </div>
+                              </div>
+                          </div>
+                          <div class="form-group row">
+                              <label for="" class="col-sm-4 col-form-label">Keterangan</label>
+                              <div class="col-sm-8">
+                                  <input type="text" class="form-control" name="description">
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="row">
+                      <div class="col-md-6">
+                          <p style="font-size: 25px; justify-content: start; float:left">Kembalian Rp. <b id="kembalian_text" style="font-size: 30px;"> 0</b></p>
+                          <input type="hidden" name="total_change">
+                      </div>
+                      <div class=" col-md-6">
+                          <p style="font-size: 25px; justify-content: end; float:right">Grand Total Rp. <b id="total_bayar_modal_text" style="font-size: 30px;"> 0</b></p>
+                      </div>
+                  </div>
+              </div>
+              <div class=" modal-footer">
+                  <button type="button" class="btn btn-default pull-left" data-dismiss="modal"><i class="fa fa-times-circle"></i> Tutup</button>
+                  <button type="button" class="btn btn-success pull-right" id="Payment"><i class="fa fa-money"></i> Bayar</button>
+              </div>
+          </form>
+      </div>
+  </div>
+</div>
 <?php $this->load->view('layouts/v_footer') ?>
 <script>
   $(function() {
@@ -156,46 +232,180 @@
       tableReportSale.ajax.reload()
     })
 
-    $('body').on('click', '.delete-transaction', function() {
-      let trParents = $(this).parents().parents().closest('tr')
-      let invoice = trParents.find('td:eq(2)').text()
-      swal({
-          title: "Apakah kamu yakin?",
-          text: `Transaksi ${invoice} akan dibatalkan?`,
-          icon: "warning",
-          buttons: true,
-          dangerMode: true,
+    function loadTables() {
+        $('#tables_id').select2({
+            placeholder: "-- Pilih --",
+            allowClear: true
         })
-        .then((confirmDelete) => {
-          if (confirmDelete) {
-            let id = $(this).attr('data-id')
-            console.log(id)
-            $.ajax({
-              url: `<?= base_url() ?>transactions/input/delete/${id}`,
-              type: 'DELETE',
-              dataType: 'json',
-              success: function(response) {
+        $('#tables_id').empty()
+        $.ajax({
+            url: '<?= base_url() ?>transactions/create/loadTables',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
                 if (response.status == true) {
-                  swal({
-                    title: "Berhasil!",
-                    text: response.message,
-                    icon: "success",
-                  }).then(function() {
-                    tableReportSale.ajax.reload();
-                  });
+                    $('#tables_id').prop('disabled', false)
+                    response.data.forEach((e, i) => {
+                        $('#tables_id').append(`<option value="${e.id}">${e.name}</option>`)
+                    })
                 } else {
-                  swal({
-                    title: "Gagal!",
-                    text: response.message,
-                    icon: "error",
-                  })
+                    $('#tables_id').prop('disabled', true)
                 }
+            }
+        })
+    }
+
+    function loadCustomers() {
+        $('#customers_id').select2({
+            placeholder: "-- Pilih --",
+            allowClear: true
+        })
+        $('#customers_id').empty()
+        $.ajax({
+            url: '<?= base_url() ?>transactions/create/loadCustomers',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.status == true) {
+                    $('#customers_id').prop('disabled', false)
+                    response.data.forEach((e, i) => {
+                        $('#customers_id').append(`<option value="${e.id}">${e.fullname} - ${e.phone}</option>`)
+                    })
+                } else {
+                    $('#customers_id').prop('disabled', true)
+                }
+            }
+        })
+    }
+
+    function generateCurrency(angka, prefix) {
+        var number_string = angka.replace(/[^,\d]/g, '').toString(),
+            split = number_string.split(','),
+            sisa = split[0].length % 3,
+            rupiah = split[0].substr(0, sisa),
+            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+        if (ribuan) {
+            separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+        }
+
+        rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+        return prefix == undefined ? rupiah : (rupiah ? '' + rupiah : '');
+    }
+
+    function currencyFormatRupiah(elemValue) {
+        return $(elemValue).val(generateCurrency($(elemValue).val(), 'Rp. '))
+    }
+
+    function calcKembalian() {
+        let jumlah_bayar = checkPrice($('input[name="total_cash"]').val())
+        let total_bayar = $('#total_bayar_modal_val').val()
+
+        let kembalian = parseInt(jumlah_bayar) - parseInt(total_bayar)
+        $('#kembalian_text').text(parseInt(kembalian).toLocaleString())
+        $('input[name="total_change"]').val(kembalian)
+    }
+
+    function checkPrice(value) {
+      if (typeof value == "string") {
+          let final = 0;
+          for (let i = 0; i < value.length; i++) {
+              if (value[i] != "." && value[i] != ",") {
+                  final = (final * 10) + parseInt(value[i]);
               }
-            })
           }
-        });
+          return final;
+      } else {
+          return value;
+      }
+    }
+
+    function sweetalert(title, text, icon) {
+        swal({
+            title: title,
+            text: text,
+            icon: icon,
+        })
+    }
+
+    $('input[name="total_cash"]').on('keyup', function(e) {
+        e.preventDefault()
+        calcKembalian()
     })
 
+    $(document).on('keyup', '#totalCash', function(e) {
+        currencyFormatRupiah(this)
+    })
 
+    $('.total_cash').on('keyup change', function (e) {
+        e.preventDefault()
+        if (e.keyCode == 13) {
+            $('#Payment').trigger('click')
+        }
+    })
+
+    $('#payModal').on('show.bs.modal', function(e) {
+        let button = $(e.relatedTarget)
+        let id = button.data('id')
+        let code = button.data('code')
+        let total_bayar = button.data('total')
+        let modal = $(this)
+        
+        loadTables()
+        loadCustomers()
+
+        $('#payForm').attr('action', `<?= base_url() ?>transactions/edit/${id}`)
+        modal.find('.modal-body #total_bayar_modal').val(parseInt(total_bayar).toLocaleString())
+        modal.find('.modal-body #total_bayar_modal_text').text(parseInt(total_bayar).toLocaleString())
+        modal.find('.modal-body #total_bayar_modal_val').val(total_bayar)
+        modal.find('.modal-body #codeCurr').val(code)
+        $('#totalCash').focus()
+    })
+
+    $('#Payment').on('click', function(e) {
+        let code = $('#codeCurr').val()
+        let totalChange = $('input[name="total_change"]').val()
+        let totalCash = $('input[name="total_cash"]').val();
+        let description = $('input[name="description"]').val()
+        let pay = checkPrice($('input[name="total_cash"]').val())
+        let total = $('#total_bayar_modal_val').val()
+
+        if (parseInt(pay) < parseInt(total)) {
+            sweetalert('Maaf', 'Jumlah nominal pembayaran kurang!', 'error')
+        } else {
+            let finalData = {
+                code: code,
+                totalChange: totalChange,
+                totalCash: pay,
+                description: description
+            };
+
+            //insert
+            $(this).attr('disabled', true)
+            let action = $('#payModal #payForm').attr('action')
+            $.ajax({
+                url: action,
+                method: 'POST',
+                data: finalData,
+                dataType: 'json',
+                success: function(response) {
+                    if (response.status == true) {
+                        $(this).attr('disabled', false)
+                        $('#payModal').modal('hide')
+                        swal({
+                            title: "Transaksi Pembayaran Berhasil!",
+                            icon: "success",
+                        })
+                        .then((confirm) => {
+                            if (confirm) {
+                                window.location.href = "<?= base_url() ?>transactions"
+                            }
+                        });
+                    }
+                }
+            })
+        }
+    })
   })
 </script>

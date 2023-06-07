@@ -60,7 +60,7 @@ class Transactions extends CI_Controller
             } else {
                 $button = '<span class="text-center text-danger"><b>BELUM BAYAR</b></span>';
                 $button .= '<div class="btn-group text-center" style="margin-top: 0.5em;">
-                            <button class="btn btn-primary btn-sm" type="button"><i class="fa fa-money"></i> Bayar</button>
+                            <button class="btn btn-primary btn-sm" data-toggle="modal" data-target="#payModal" type="button" data-id="'.$value->id.'" data-code="'.$value->code.'" data-total="'.$value->total.'"><i class="fa fa-money"></i> Bayar</button>
                         </div>';
             }
 
@@ -90,5 +90,19 @@ class Transactions extends CI_Controller
             $record .= '</tbody></table></div>';
         }
         return $record;
+    }
+
+    public function edit($transactionsId)
+    {
+        $this->sistem_model->_update('transactions', [
+            'status' => 'FINISH',
+            'pay' => $this->input->post('totalCash'),
+            'change' => $this->input->post('totalChange'),
+        ], ['id' => $transactionsId]);
+        $response['status'] = true;
+        $response['message'] = "Pembayaran Berhasil!";
+        $response['data'] = null;
+
+        echo json_encode($response);
     }
 }
