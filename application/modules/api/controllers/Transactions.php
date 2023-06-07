@@ -67,6 +67,12 @@ class Transactions extends CI_Controller
                 "transaction_details",
                 $transactionDetails
             );
+
+            $this->sistem_model->_delete("carts", [
+                "customers_id" => $request["customers_id"],
+                "foods_id" => $request["foods_id"][$i],
+                "quantity" => $request["quantity"][$i],
+            ]);
         }
 
         $response["status"] = true;
